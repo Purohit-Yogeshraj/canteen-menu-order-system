@@ -1,137 +1,191 @@
-# Campus Canteen Menu & Order Queue System
-**MSc IT Vibe Coding Lab Project — Production Deliverable**
+# Canteen Menu & Order Queue System
 
-> 🔗 **Live Demo URL:** `http://localhost:3000` *(Local Dev / Vercel Edge Ready)*  
-> *For cloud hosting: Connect your GitHub repository to Vercel with environment variables specified below.*
+**A smart, responsive digital canteen ordering and queue management application.**
 
----
-
-## 📖 1. Project Overview
-
-The **Canteen Menu & Order Queue System** is a mobile-first web application designed to solve physical congestion and wait-time uncertainty in university and workplace dining facilities.
-
-By replacing counter lines with a real-time virtual queue, students can browse 16 realistic Indian canteen dishes, customize quantities, and place orders with their student roll numbers. A concurrency-safe daily token is allocated (`#001`, `#002`), and progress is displayed live through a 3-stage kitchen timeline with dynamic wait-time estimation ($\approx 5\text{ mins per order ahead}$). Kitchen staff process orders via a 3-column forward Kanban board, while an overhead 1080p display alerts students the moment their token is ready for collection.
+> **Live Application:** [ADD YOUR ACTUAL VERCEL URL HERE]
 
 ---
 
-## ✨ 2. Key Features
+## About the Project
 
-- **Mobile-First Student Menu (`/`):** 16 curated Indian canteen dishes (Samosa, Masala Dosa, Pav Bhaji, Biryani, Chai, etc.) with high-resolution photos and inline SVG fallbacks. Category pills (*Snacks*, *Meals*, *Beverages*, *Desserts*), Veg/Non-Veg indicators, instant search, and touch steppers bounded by a strict 10-unit maximum limit.
-- **Atomic Shopping Cart (`/cart`):** Quantity steppers (1–10), real-time stock reconciler with sold-out item eviction alerts, student credentials validation (Name and Roll No), transparent pricing (₹), and 4:45 PM ordering cutoff enforcement.
-- **Order Status Tracking (`/order/:id`):** Large daily sequential token badge, 3-stage animated progress timeline (*Placed* $\to$ *Preparing* $\to$ *Ready*), dynamic wait-time calculation, and confetti celebration with counter pickup directions.
-- **Kitchen Kanban Operations (`/kitchen`):** 3-column Kanban (*New*, *Preparing*, *Ready*), forward-only transitions, 15-minute overdue alert badge (`⚠️ Overdue (>15m)`), and new order audio chimes.
-- **Now Serving TV Display (`/display`):** Fullscreen 1920×1080 dark mode layout for cafeteria monitors, dual split (*Preparing* vs. *Ready to Collect*), and **5-second pulsing/blinking animation** for newly called tokens.
-- **Owner Menu Manager (`/admin`):** 4 real-time business KPI cards (Today's Orders, Gross Sales ₹, Total Items Sold, Top-Selling Dish), interactive stock toggles, price updates, and Add/Edit food modal.
-- **Lab Evaluator Demo Controls (Dev-Only):** Discreet bar allowing evaluators to simulate normal hours (12:30 PM), 4:46 PM cutoff (closed state), or inject a $>15$-minute overdue order for instant grading—all via virtual context offsets with zero mutation of the host system clock.
+The Canteen Menu & Order Queue System is a web-based application designed to simplify food ordering and order management in a college canteen.
+
+Students can browse available food items, add products to their cart, place orders, and track their order status using a daily sequential token number.
+
+Kitchen staff can manage incoming orders and update their preparation status, while the owner can manage food items, prices, and availability.
 
 ---
 
-## 🛠️ 3. Technology Stack
+## Main Features
 
-| Tier | Technology | Purpose & Rationale |
-| :--- | :--- | :--- |
-| **Frontend Framework** | **React 18 + Vite 5** | Lightning-fast HMR, component modularity, production tree-shaking. |
-| **Styling** | **Tailwind CSS 3** | Mobile-first utility design, responsive breakpoints (390px baseline), bespoke canteen palette (`#F97316`). |
-| **Icons** | **Lucide React** | High-contrast, clean icons for dietary badges, actions, and states. |
-| **State Management** | **React Context + Hooks** | `CartContext`, `MenuContext`, `OrderContext`, and `SimulationContext`. |
-| **Database & Realtime** | **Supabase (PostgreSQL + Realtime)** | Managed PostgreSQL relational database with Change Data Capture (CDC) over WebSockets. |
-| **Local Realtime Mock** | **BroadcastChannel API** | Cross-tab / cross-window real-time event bus for seamless local testing without Supabase keys. |
-| **Routing** | **React Router DOM v6** | Declarative client-side routing across all 6 core screen URLs with `vercel.json` rewrite support. |
-| **Deployment** | **Vercel** | Edge network deployment with automated Git continuous integration. |
+### 1. Student Menu (`/`)
+- Browse 16 realistic Indian canteen food items.
+- Search dishes and filter by food categories (*Snacks*, *Meals*, *Beverages*, *Desserts*).
+- Filter by dietary preference (*Pure Veg*, *Non-Veg*, *All*).
+- View food prices in Indian Rupees (₹) and detailed descriptions.
+- Add products to cart with quantity controls (up to 10 units maximum).
+- Clear identification and disabled actions for sold-out products.
+- Mobile-first responsive layout with floating sticky cart summary bar.
+
+### 2. Shopping Cart (`/cart`)
+- Add and remove products with touch-friendly controls.
+- Increase and decrease quantities (bounded between 1 and 10 units).
+- Accurate subtotal and grand total calculation in Indian Rupees (₹).
+- Enter student information (Full Name and College Roll Number).
+- Automatic eviction notification if an item becomes sold out while in the cart.
+- Strict ordering cutoff enforcement at 4:45 PM IST.
+- Place food orders with accidental duplicate submission protection.
+
+### 3. Order Status (`/order/:id`)
+- Generate and display a prominent daily sequential order token (e.g., `#001`, `#042`).
+- 3-stage visual progress timeline: *Placed* $\to$ *Preparing* $\to$ *Ready*.
+- Dynamic queue waiting time calculation based on active orders ahead.
+- Automatic confetti celebration and Counter 1 collection directions when *Ready*.
+- Real-time status synchronization without page refresh.
+
+### 4. Kitchen Board (`/kitchen`)
+- 3-column Kanban view: **NEW**, **PREPARING**, and **READY**.
+- Displays token numbers, student names, roll numbers, ordered items, and order time.
+- Implement forward-only status progression actions: *Start Preparing*, *Mark Ready*, and *Mark Collected*.
+- Highlight orders older than 15 minutes with an amber-red overdue warning badge.
+- Automatically receive new orders with an audible chime alert.
+- Real-time multi-window synchronization.
+
+### 5. Now Serving Display (`/display`)
+- Fullscreen dark interface optimized for 1920×1080 cafeteria TV screens.
+- Distinct *Preparing in Kitchen* and *Ready for Pickup* zones.
+- Extra-large readable token numbers.
+- Newly ready tokens trigger a 5-second pulsing blink animation.
+- Automatically clear collected tokens from the screen.
+- Real-time updates without manual browser refresh.
+
+### 6. Owner Menu Manager (`/admin`)
+- 4 real-time business KPI metrics: Today's Orders, Gross Sales (₹), Total Items Sold, Top-Selling Dish.
+- Display all menu items with search and category filtering.
+- Add new food items via modal form.
+- Edit existing food items (prices, names, descriptions, categories, images).
+- Interactive availability toggle: marks items *Available* or *Sold Out* instantly.
+- Live synchronization pushes updates to student menus and carts immediately.
 
 ---
 
-## 🚀 4. Installation & Local Setup
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| **React 18** | Frontend component development |
+| **Vite 5** | High-performance bundling and development server |
+| **Tailwind CSS 3** | Mobile-first responsive styling and animations |
+| **Supabase** | PostgreSQL database and WebSocket Realtime subscriptions |
+| **BroadcastChannel API** | Multi-window real-time synchronization in local mock mode |
+| **React Router DOM v6** | Declarative client-side routing across all 6 screens |
+| **Git & GitHub** | Source code management and version control |
+| **Vercel** | Edge deployment platform with automated builds |
+
+---
+
+## Application Routes
+
+| Route | Screen Name | Target Viewport / User |
+|---|---|---|
+| `/` | **Student Menu** | Mobile (390px) & Desktop — Students / Faculty |
+| `/cart` | **Shopping Cart** | Mobile (390px) & Desktop — Checkout |
+| `/order/:id` | **Order Status** | Mobile (390px) & Desktop — Live Customer Tracking |
+| `/kitchen` | **Kitchen Board** | Tablet (768px+) & Desktop — Kitchen Chefs / Staff |
+| `/display` | **Now Serving Display** | 1920×1080 Fullscreen TV — Cafeteria Hall Audience |
+| `/admin` | **Owner Menu Manager** | Desktop (1024px+) & Tablet — Canteen Manager |
+
+---
+
+## Installation and Setup
 
 ### Prerequisites
 - Node.js (v18.x or v22.x)
 - npm (v9.x or v10.x)
 - Git
 
-### Quickstart Commands
+### Step 1: Clone the repository
 ```bash
-# 1. Clone repository
-git clone <your-repo-url>
-cd canteen-order-queue
-
-# 2. Install dependencies
-npm install
-
-# 3. Start development server
-npm run dev
+git clone YOUR_GITHUB_REPOSITORY_URL
 ```
 
-The application will be available at: **`http://localhost:3000/`**
+### Step 2: Open the project directory
+```bash
+cd canteen-order-queue
+```
 
----
+### Step 3: Install dependencies
+```bash
+npm install
+```
 
-## ⚙️ 5. Environment Variables & Modes
-
-Copy `.env.example` to `.env`:
+### Step 4: Configure environment variables
+Copy `.env.example` into `.env`:
 ```bash
 cp .env.example .env
 ```
+Enter your Supabase configuration if connecting to live cloud storage. If left blank, the application runs on its built-in local Mock Adapter.
 
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | Supabase Project URL | `https://your-project.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Supabase Public Anon Key | `eyJhbGciOi...` |
-| `VITE_USE_MOCK_DATA` | Force local mock adapter | `true` (in dev) |
-| `VITE_ENABLE_DEMO_CONTROLS` | Enable time/ticket simulation | `true` (dev only; stripped in prod) |
+Never commit secret credentials or service role keys.
 
-### Dual-Mode Architecture:
-- **Zero-Setup Mock Mode:** When `VITE_SUPABASE_URL` is empty, the application runs on its high-fidelity Mock Adapter. It persists data in `localStorage` and synchronizes events across separate browser tabs via the Web `BroadcastChannel` API.
-- **Production Fail-Fast Guard:** In production builds (`import.meta.env.PROD`), if Supabase credentials are missing or connection fails, the application immediately renders a fatal configuration error banner. Silent fallback to mock data is strictly forbidden in production.
+### Step 5: Start the development server
+```bash
+npm run dev
+```
+Open the local URL provided by Vite (default: `http://localhost:3000`).
+
+### Step 6: Build for production
+```bash
+npm run build
+```
 
 ---
 
-## 🗄️ 6. Supabase Database Configuration
+## Database Configuration
 
-To connect live Supabase cloud storage:
+The application uses Supabase for persistent storage and real-time updates:
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. Navigate to the **SQL Editor** in your Supabase dashboard.
-3. Paste and execute the SQL script in [supabase/schema.sql](supabase/schema.sql). This creates:
-   - `menu_items` table (with 16 Indian seed canteen items).
-   - `orders` and `order_items` tables with cascade rules.
-   - `daily_sequences` table with transactional row locking (`create_canteen_order` RPC) to guarantee zero duplicate tokens under concurrent submissions.
-   - Enables PostgreSQL CDC on `orders` and `menu_items`.
-4. Paste and execute [supabase/rls_policies.sql](supabase/rls_policies.sql) to enable Row Level Security.
-5. Add your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env` and set `VITE_USE_MOCK_DATA=false`.
+2. Open the **SQL Editor** in your Supabase dashboard.
+3. Run `supabase/schema.sql` to create tables, constraints, seed data, and the atomic sequential token stored procedure (`create_canteen_order`).
+4. Run `supabase/rls_policies.sql` to apply Row Level Security policies.
+5. Add your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env`.
+
+The local mock mode can be used for development without Supabase credentials, persisting data in `localStorage` and synchronizing events across tabs via the Web `BroadcastChannel` API.
 
 ---
 
-## 🗺️ 7. Application Routes
+## Business Rules
 
-| Route | Screen Name | Viewport / Target Device | Primary User |
-| :--- | :--- | :--- | :--- |
-| `/` | **Student Menu** | Mobile (390px) & Desktop | Students / Faculty |
-| `/cart` | **Shopping Cart** | Mobile (390px) & Desktop | Students / Faculty |
-| `/order/:id` | **Order Status** | Mobile (390px) & Desktop | Active Order Customer |
-| `/kitchen` | **Kitchen Board** | Tablet (768px+) & Desktop | Kitchen Chefs / Prep Crew |
-| `/display` | **Now Serving Display** | 1920×1080 Fullscreen TV | Cafeteria Hall Audience |
-| `/admin` | **Owner Menu Manager** | Desktop (1024px+) & Tablet | Canteen Manager / Owner |
+- **Status Sequence:** Orders follow the strict sequence `Placed` $\to$ `Preparing` $\to$ `Ready` $\to$ `Collected`. Backward transitions are strictly forbidden.
+- **Daily Tokens:** Sequential tokens start from `#001` each day, resetting at 00:00:00 `Asia/Kolkata` time.
+- **Quantity Caps:** Maximum quantity per product is 10 units.
+- **Operating Hours:** Canteen operational hours are 08:00 AM – 05:00 PM IST.
+- **Order Cutoff:** New orders close strictly at 04:45 PM IST.
+- **Real-Time Sync:** Status and stock updates synchronize automatically across active windows within 5 seconds.
 
 ---
 
-## 👨‍🍳 8. Demo & Staff Access Instructions
+## Project Documentation
 
-For lab examiners and demonstration purposes:
-- **Direct Navigation:** Staff screens are accessible directly via the top navigation bar or direct URLs (`/kitchen`, `/display`, `/admin`).
-- **Simulating Real-Time Across Separate Windows:**
-  1. Open **Window 1:** `http://localhost:3000/cart`
-  2. Open **Window 2:** `http://localhost:3000/kitchen`
-  3. Open **Window 3:** `http://localhost:3000/display`
-  4. Place an order on Window 1. Within seconds, Window 2 sounds an audible chime and receives the ticket, while Window 3 updates queue counts.
-- **Testing 4:45 PM Cutoff:** Click **"4:46 PM (Cutoff)"** on the top demo controls bar. The student menu immediately reflects the cutoff banner and blocks checkout.
-- **Testing Overdue Ticket Warning:** Click **"Inject >15m Overdue Ticket"** to instantly generate a ticket placed 16 minutes ago and inspect the flashing amber-red overdue badge on `/kitchen`.
+- `AGENTS.md` — Agent instructions, safety architecture, and invariants.
+- `docs/01-brief.md` — Project overview, personas, and scope boundaries.
+- `docs/02-screens.md` — Screen specifications and button action tables.
+- `docs/03-flows-rules.md` — Business rules, state machines, and QA test matrix.
+- `project_plan_and_architecture.md` — System architecture and implementation roadmap.
+- `prompts.md` — Chronological record of all executed AI prompts.
+- `reflection.md` — Academic reflection on AI-assisted development.
 
 ---
 
-## 🧪 9. Automated Quality Verification
+## Author
 
-Run the automated 20-point test runner:
-```bash
-node scripts/verify-all.js
-```
-All 20 test points (menu catalog, steppers, bounds, student validation, atomic tokens, kitchen intake, forward progression, overdue alerts, wait calculations, sold-out cart eviction, operating hours, and 390px mobile compliance) pass with 100% compliance.
+**Student Name:** Purohit Yogeshraj Bhanwarlal  
+**Course:** MSc IT  
+**Enrollment No.:** 202612091  
+
+---
+
+## Acknowledgement
+
+Google Antigravity was used as an AI-assisted development tool for project planning, architecture design, implementation, and test verification.
