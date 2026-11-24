@@ -1,19 +1,31 @@
 // ==============================================================================
-// RESPONSIVE APPLICATION NAVBAR
-// Brand header, operating status badge, and navigation across all screens
+// RESPONSIVE APPLICATION NAVBAR (WITH ROLE-BASED ACCESS CONTROL)
+// Brand header, operating status badge, dynamic staff/admin links, and auth controls
 // ==============================================================================
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, UtensilsCrossed, Monitor, LayoutDashboard, Menu, X, Clock, ShieldAlert } from 'lucide-react';
+import {
+  ShoppingBag,
+  UtensilsCrossed,
+  Clock,
+  Menu,
+  X,
+  Lock,
+  LogOut,
+  UserCheck,
+  Crown,
+} from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useCanteenHours } from '../../hooks/useCanteenHours';
+import { useAuth } from '../../context/AuthContext';
 import { activeMode } from '../../api/client';
 
 export function Navbar() {
   const location = useLocation();
   const { totalItemsCount } = useCart();
   const { isOpen, isPastCutoff, formattedTime } = useCanteenHours();
+  const { userRole, isLoggedIn, hasStaffAccess, hasAdminAccess, logout, openLoginModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // TV display screen hides standard navbar to be completely fullscreen
@@ -21,12 +33,20 @@ export function Navbar() {
     return null;
   }
 
-  const navLinks = [
-    { name: 'Menu', path: '/' },
-    { name: 'Kitchen Board', path: '/kitchen', badge: 'Staff' },
-    { name: 'Now Serving TV', path: '/display', badge: '1080p' },
-    { name: 'Menu Manager', path: '/admin', badge: 'Admin' },
-  ];
+  // Dynamic Navigation Links:
+  // - Students / Guests: See 'Menu'
+  // - Kitchen Staff: See 'Menu', 'Kitchen Board', and 'Now Serving TV'
+  // - Admin: See 'Menu', 'Kitchen Board', 'Now Serving TV', and 'Menu Manager'
+  const navLinks = [{ name: 'Menu', path: '/' }];
+
+  if (hasStaffAccess) {
+    navLinks.push({ name: 'Kitchen Board', path: '/kitchen', badge: 'Staff' });
+    navLinks.push({ name: 'Now Serving TV', path: '/display', badge: 'TV' });
+  }
+
+  if (hasAdminAccess) {
+    navLinks.push({ name: 'Menu Manager', path: '/admin', badge: 'Admin' });
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm transition-all">
@@ -52,7 +72,7 @@ export function Navbar() {
           </Link>
 
           {/* Operational Hours Badge (Desktop) */}
-          <div className="hidden md:flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-stone-100 border border-stone-200">
+          <div className="hidden xl:flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-stone-100 border border-stone-200">
             <Clock className="w-3.5 h-3.5 text-stone-500" />
             <span className="text-stone-600">{formattedTime}</span>
             <span className="text-stone-300">•</span>
@@ -66,7 +86,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
@@ -81,7 +101,7 @@ export function Navbar() {
                 >
                   <span>{link.name}</span>
                   {link.badge && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 border border-stone-200">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 border border-stone-200 font-bold">
                       {link.badge}
                     </span>
                   )}
@@ -90,8 +110,43 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Action CTAs: Cart Icon & Mobile Hamburger */}
-          <div className="flex items-center space-x-2">
+          {/* Action CTAs: Auth Controls, Cart Icon & Mobile Hamburger */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            
+            {/* Desktop Auth State Pill */}
+            {isLoggedIn ? (
+              <div className="hidden sm:flex items-center space-x-1.5 bg-stone-100/80 p-1 pl-2.5 rounded-xl border border-stone-200">
+                {userRole === 'admin' ? (
+                  <span className="flex items-center space-x-1 text-xs font-bold text-purple-700">
+                    <Crown className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Admin</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center space-x-1 text-xs font-bold text-emerald-700">
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Staff</span>
+                  </span>
+                )}
+                <button
+                  onClick={logout}
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-white transition-colors"
+                  title="Log out of staff session"
+                  aria-label="Log out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => openLoginModal('staff')}
+                className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold text-slate-700 hover:text-canteen-600 hover:border-canteen-300 hover:bg-canteen-50/50 transition-all min-h-[40px]"
+              >
+                <Lock className="w-3.5 h-3.5 text-stone-500" />
+                <span>Staff Login</span>
+              </button>
+            )}
+
+            {/* Shopping Cart Button */}
             <Link
               to="/cart"
               className="relative p-2.5 rounded-xl bg-canteen-500 text-white hover:bg-canteen-600 active:scale-95 transition-all shadow-md shadow-canteen-500/25 flex items-center justify-center min-w-[44px] min-h-[44px]"
@@ -108,7 +163,7 @@ export function Navbar() {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-stone-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-stone-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -119,7 +174,7 @@ export function Navbar() {
 
       {/* Mobile Dropdown Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-5 space-y-1 shadow-lg animate-in fade-in duration-150">
+        <div className="md:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-5 space-y-2 shadow-lg animate-in fade-in duration-150">
           <div className="flex items-center justify-between py-2 px-3 mb-2 rounded-lg bg-stone-50 text-xs text-stone-600">
             <div className="flex items-center space-x-1.5">
               <Clock className="w-4 h-4 text-stone-500" />
@@ -145,13 +200,51 @@ export function Navbar() {
               >
                 <span>{link.name}</span>
                 {link.badge && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-600 border border-stone-200">
+                  <span className="text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-600 border border-stone-200 font-bold">
                     {link.badge}
                   </span>
                 )}
               </Link>
             );
           })}
+
+          {/* Mobile Auth Button */}
+          <div className="pt-3 border-t border-stone-100">
+            {isLoggedIn ? (
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
+                <div className="flex items-center space-x-2">
+                  {userRole === 'admin' ? (
+                    <Crown className="w-4 h-4 text-purple-600" />
+                  ) : (
+                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                  )}
+                  <span className="text-xs font-bold text-slate-800">
+                    Logged in as {userRole === 'admin' ? 'Admin' : 'Kitchen Staff'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                >
+                  Log Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openLoginModal('staff');
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-800 font-bold text-xs flex items-center justify-center space-x-2 transition-colors min-h-[44px]"
+              >
+                <Lock className="w-4 h-4 text-stone-600" />
+                <span>Staff & Admin Login</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </header>

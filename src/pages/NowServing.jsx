@@ -4,7 +4,8 @@
 // ==============================================================================
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, BellRing, Flame, Sparkles, Monitor } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Clock, BellRing, Flame, Sparkles, Monitor, ArrowLeft } from 'lucide-react';
 import { useOrders } from '../context/OrderContext';
 import { useSimulation } from '../context/SimulationContext';
 import { orderService } from '../api/orderService';
@@ -83,12 +84,22 @@ export function NowServing() {
           </div>
         </div>
 
-        {/* Live Digital Clock */}
-        <div className="flex items-center space-x-3 bg-slate-900/90 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-inner">
-          <Clock className="w-5 h-5 text-canteen-400" />
-          <span className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-widest">
-            {clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-          </span>
+        {/* Live Digital Clock & Exit Link */}
+        <div className="flex items-center space-x-3">
+          <Link
+            to="/kitchen"
+            className="hidden sm:inline-flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700/80 transition-colors"
+            title="Return to Kitchen Board"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kitchen</span>
+          </Link>
+          <div className="flex items-center space-x-3 bg-slate-900/90 border border-slate-800 px-5 py-2.5 rounded-2xl shadow-inner">
+            <Clock className="w-5 h-5 text-canteen-400" />
+            <span className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-widest">
+              {clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          </div>
         </div>
       </div>
 

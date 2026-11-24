@@ -166,6 +166,20 @@ The local mock mode can be used for development without Supabase credentials, pe
 
 ---
 
+## Staff & Admin Access Control
+
+To protect kitchen management and menu administration from unauthorized public changes, role-based password authentication is enforced:
+
+| Role | Default Password | Accessible Screens & Features |
+| :--- | :--- | :--- |
+| **Student / Public** | *None (open)* | Canteen Menu (`/`), Shopping Cart (`/cart`), Order Status (`/order/:id`) |
+| **Kitchen Staff** | `staff123` | Kitchen Kanban Board (`/kitchen`), Now Serving TV Display (`/display`) |
+| **Canteen Admin** | `admin123` | Owner Menu Manager (`/admin`), Kitchen Board (`/kitchen`), Now Serving TV (`/display`) |
+
+Passwords can be customized via `VITE_STAFF_PASSWORD` and `VITE_ADMIN_PASSWORD` in `.env`.
+
+---
+
 ## Project Documentation
 
 - `AGENTS.md` — Agent instructions, safety architecture, and invariants.

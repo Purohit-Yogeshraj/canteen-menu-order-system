@@ -115,6 +115,21 @@ I instructed Google Antigravity to review `README.md`, `prompts.md`, and `reflec
 
 ---
 
+## Prompt 8: Staff and Admin Password Protection & Dynamic Navigation
+
+I instructed Google Antigravity to implement password protection for kitchen staff and admin screens so that students and unauthorized visitors cannot access or alter internal views, and to dynamically display staff links (`Kitchen Board` and `Now Serving TV`) when logged in as staff, and admin links (`Menu Manager`, `Kitchen Board`, and `Now Serving TV`) when logged in as admin.
+
+The agent was instructed to:
+- Protect `/kitchen`, `/admin`, and `/display` with role-based passwords.
+- Provide a clean authentication context (`AuthContext.jsx`) and protected route wrapper (`ProtectedRoute.jsx`).
+- Update `Navbar.jsx` so students see only `Menu` and `Cart`, while authenticated staff and admins see their respective operational links.
+- Provide demo passwords (`staff123` and `admin123`) for seamless academic evaluation.
+- Add login and logout controls across desktop and mobile navigation.
+
+**Outcome:** The agent implemented `AuthContext.jsx`, `ProtectedRoute.jsx`, `LoginModal.jsx`, and dynamic navigation in `Navbar.jsx`, verified compilation and QA tests (all 29 passing), and committed the updates to Git.
+
+---
+
 ## Failed Prompts, Unexpected Behaviors, and Corrections
 
 | # | Stage | Issue / Challenge Encountered | Correction Applied |
@@ -123,3 +138,5 @@ I instructed Google Antigravity to review `README.md`, `prompts.md`, and `reflec
 | **2** | Production Safety | Risk of production silently falling back to mock data if cloud credentials were misconfigured. | User mandated fail-fast invariant; agent implemented `ConfigErrorBanner` in `client.js` to immediately halt execution in production if keys are missing. |
 | **3** | Browser Preview | Browser subagent reported `ENOENT` on `DevToolsActivePort` because Chrome remote debugging was not enabled on the host machine. | Agent recognized the headless browser constraint, confirmed the Vite server was running on `http://localhost:3000/`, and provided direct manual testing instructions. |
 | **4** | Documentation Parity | QA checklist count was referenced as 12 tests in `AGENTS.md` while `docs/03-flows-rules.md` contained 14 tests. | Agent harmonized `AGENTS.md` and test scripts to explicitly reference the complete 14-test matrix. |
+| **5** | Operating Hours Evaluation | Testing at night triggered the 5:00 PM closing rule, rendering items as "Orders Closed". | Agent added automatic daytime 12:30 PM simulation when real time is outside operating hours, along with one-click evaluator controls. |
+| **6** | Route Access Control | Staff and admin screens were directly accessible by any user through the navigation bar without authentication. | Agent implemented role-based password protection (`AuthContext`, `ProtectedRoute`, `LoginModal`) restricting access and dynamically showing staff/admin links only upon authentication. |
