@@ -2,7 +2,7 @@
 **Project Name:** Canteen Menu & Order Queue System  
 **Academic Level:** MSc IT Vibe Coding Lab Project  
 **Author/Lead:** Senior Full-Stack Developer & UI/UX Engineer  
-**Date:** November 2026  
+**Date:** November 2026 (Updated with Safety Architecture)  
 
 ---
 
@@ -24,7 +24,7 @@ The **Canteen Menu & Order Queue System** replaces physical counter queues with 
 
 ### 2.2 The Solution
 - **Transparent Virtual Queue:** Customers track their exact position in line with automated time estimation ($\approx 5\text{ min per preceding order}$).
-- **Three-Way Real-Time Synchronization:** Orders placed on student mobile phones immediately appear on the kitchen staff dashboard and overhead canteen monitors via Supabase real-time websockets ($<5\text{s latency}$).
+- **Three-Way Real-Time Synchronization:** Orders placed on student mobile phones immediately appear on the kitchen staff dashboard and overhead canteen monitors via Supabase real-time websockets (or local BroadcastChannel bus in dev mock mode) with latency $< 5\text{s}$.
 - **Enforced Business Guardrails:** Built-in safeguards prevent stale orders after the 4:45 PM cutoff, enforce strict forward status progression, and limit individual item quantities.
 - **Dynamic Menu Management:** The canteen manager can instantly toggle out-of-stock items, adjust prices, and inspect daily sales statistics from a dedicated administrative console.
 
@@ -33,7 +33,7 @@ The **Canteen Menu & Order Queue System** replaces physical counter queues with 
 ## 3. User Personas & Core Journeys
 
 ### Persona A: College Student (Aarav, 21 — MSc IT Student)
-- **Context:** Has a 30-minute break between laboratory sessions.
+- **Context:** Has a 30-minute break between laboratory sessions. Using a smartphone (390px viewport).
 - **Goal:** Order a Hot Samosa and Filter Coffee, check the queue wait time, sit comfortably with classmates, and walk to the counter only when token #042 is called.
 - **Key Journey:**
   1. Opens Student Menu (`/`) on mobile phone.
@@ -44,7 +44,7 @@ The **Canteen Menu & Order Queue System** replaces physical counter queues with 
   6. Collects food at the pickup window.
 
 ### Persona B: Kitchen Chef / Counter Staff (Ramesh, 45 — Head Cook)
-- **Context:** Operates in a hot, fast-paced kitchen handling dozens of simultaneous tickets.
+- **Context:** Operates in a hot, fast-paced kitchen handling dozens of simultaneous tickets. Tablet/desktop view.
 - **Goal:** Clear incoming tickets sequentially, quickly identify tickets waiting over 15 minutes, and call ready tokens with a single tap.
 - **Key Journey:**
   1. Views Kitchen Board (`/kitchen`) mounted on a tablet near the prep station.
@@ -54,7 +54,7 @@ The **Canteen Menu & Order Queue System** replaces physical counter queues with 
   5. Hands the tray to the student and marks "Collected".
 
 ### Persona C: Canteen Owner / Manager (Mrs. Sharma — Facility Manager)
-- **Context:** Oversees daily inventory, menu pricing, and kitchen performance.
+- **Context:** Oversees daily inventory, menu pricing, and kitchen performance. Desktop view.
 - **Goal:** Ensure smooth operations, prevent orders when ingredients run dry, and monitor daily revenue.
 - **Key Journey:**
   1. Logs into Owner Menu Manager (`/admin`).
@@ -64,13 +64,11 @@ The **Canteen Menu & Order Queue System** replaces physical counter queues with 
 
 ---
 
-## 4. Scope, Boundaries & Exclusions
+## 4. Scope, Boundaries & Safety Rules
 
-To ensure exceptional stability, zero external dependency failures, and a clean demonstration during lab evaluation, the system defines precise scope boundaries:
-
-### In-Scope (Core Features)
-- Responsive 6-screen web application (Mobile, Tablet, Desktop, 1080p TV Display).
-- 15+ curated realistic Indian canteen food items with veg/non-veg indicators, categories, and real food photos.
+### 4.1 In-Scope (Core Features)
+- Responsive 6-screen web application (Mobile 390px, Tablet, Desktop, 1080p TV Display).
+- 15+ curated realistic Indian canteen food items with veg/non-veg indicators, categories, and real food photos with SVG fallbacks.
 - Cart management with quantity steppers (1–10 max cap), roll number validation, and order submission.
 - Real-time order status tracking with daily sequential token numbering.
 - Dynamic queue waiting time calculation.
@@ -79,7 +77,16 @@ To ensure exceptional stability, zero external dependency failures, and a clean 
 - Owner menu manager with CRUD, stock toggles, and daily sales metrics.
 - Canteen operational hours (08:00–17:00) with strict 16:45 ordering cutoff.
 
-### Out-of-Scope (Deliberate Non-Goals)
+### 4.2 Explicit Safety & Engineering Conditions
+1. **Mock & Supabase Mode Parity:** Both modes enforce identical business rules, validation, status progression, and sequential numbering.
+2. **Production Fail-Fast:** Production builds **never** silently fall back to mock data. If credentials are missing or connection fails in production, a visible configuration error halts execution.
+3. **Isolated Demo Controls:** Demo time simulation operates via a virtual context offset and is disabled by default in production builds.
+4. **Cross-Window Realtime:** Realtime sync functions seamlessly across independent browser tabs/windows in both live Supabase (WebSockets) and mock mode (Web `BroadcastChannel` API).
+5. **Concurrency-Safe Tokens:** Atomic token allocation via PostgreSQL transactional locking (`SELECT ... FOR UPDATE` on sequence table) preventing duplicate tokens.
+6. **Credential Security:** Only public anonymous keys used on client; RLS enabled on all tables; `.env.example` provided without committed secrets.
+7. **390px Mobile Viewport:** Fully responsive at 390px width with $\ge 44\text{px}$ touch targets and zero horizontal scroll.
+
+### 4.3 Out-of-Scope (Deliberate Non-Goals)
 - **External Payment Gateways:** Razorpay/Stripe/UPI integration is excluded to avoid sandbox keys, payment failures, or bank network latency during academic grading.
 - **Campus / Home Delivery:** Orders are collection-only at the canteen counter.
 - **Complex Google OAuth / SMS OTP:** Replaced with lightweight, high-trust Student Name & College Roll Number entry.
@@ -92,41 +99,35 @@ To ensure exceptional stability, zero external dependency failures, and a clean 
 ```mermaid
 flowchart TD
     subgraph Clients ["Client Layer (React 18 + Vite + Tailwind CSS)"]
-        SM["Student Menu & Cart\n(/, /cart, /order/:id)\nMobile & Desktop"]
+        SM["Student Menu & Cart\n(/, /cart, /order/:id)\nMobile 390px & Desktop"]
         KB["Kitchen Board\n(/kitchen)\nTablet & Desktop"]
         NSD["Now Serving Display\n(/display)\n1920x1080 TV Screen"]
         OMM["Owner Menu Manager\n(/admin)\nDesktop & Laptop"]
     end
 
-    subgraph ServiceLayer ["Application Service Layer (Vite Frontend)"]
-        RT["Supabase Realtime Client\n(WebSocket Subscriptions)"]
-        API["Data Access Layer\n(menuService / orderService)"]
-        STATE["React Context Providers\n(CartContext, OrderContext)"]
+    subgraph ServiceLayer ["Unified Data Service Layer"]
+        ADAPTER{"Mode Selector\n(Env check)"}
+        S_ADAPT["Supabase Adapter\n(PostgreSQL + WebSockets)"]
+        M_ADAPT["Mock Adapter (Dev only)\n(LocalStorage + BroadcastChannel)"]
+        STATE["React Context Providers\n(CartContext, OrderContext, MenuContext)"]
     end
 
-    subgraph SupabaseDB ["Persistent Cloud Storage (Supabase PostgreSQL)"]
-        T1[("menu_items Table")]
-        T2[("orders Table")]
-        T3[("order_items Table")]
-        T4[("daily_metrics View / RPC")]
+    subgraph SupabaseCloud ["Cloud Database (Supabase)"]
+        DB[("PostgreSQL Tables\n• menu_items\n• orders\n• order_items\n• daily_sequences")]
+        CDC["Postgres CDC Engine"]
     end
 
-    SM -->|Browse & Place Order| API
-    OMM -->|CRUD & Stock Updates| API
-    KB -->|Status Progression| API
-    API -->|PostgreSQL Queries & RPC| SupabaseDB
+    SM --> STATE
+    KB --> STATE
+    NSD --> STATE
+    OMM --> STATE
 
-    SupabaseDB -->|Postgres CDC Realtime Events| RT
-    RT -->|WebSocket Push (< 5s)| STATE
-    STATE --> SM
-    STATE --> KB
-    STATE --> NSD
-    STATE --> OMM
+    STATE --> ADAPTER
+    ADAPTER -->|Prod or Dev with Keys| S_ADAPT
+    ADAPTER -->|Dev with Mock Flag| M_ADAPT
+
+    S_ADAPT <-->|REST API + RLS| DB
+    DB --> CDC
+    CDC -->|WebSocket Push < 5s| S_ADAPT
+    M_ADAPT -->|BroadcastChannel Push < 5s| M_ADAPT
 ```
-
-### Stack Breakdown:
-1. **Frontend Core:** React 18, Vite 5, Tailwind CSS 3.
-2. **Routing:** React Router DOM v6.
-3. **Icons & UI Utilities:** Lucide React, Canvas Confetti (for ready order celebration).
-4. **Backend & Database:** Supabase PostgreSQL with built-in WebSocket Realtime channels for table changes (`INSERT`, `UPDATE`).
-5. **Hosting:** Vercel edge deployment linked to GitHub repository.
