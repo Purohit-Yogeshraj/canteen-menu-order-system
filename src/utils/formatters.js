@@ -1,6 +1,64 @@
 // ==============================================================================
-// CURRENCY, TIME & QUEUE FORMATTERS
+// CURRENCY, TIME & QUEUE FORMATTERS (WITH STRICT ASIA/KOLKATA TIMEZONE)
 // ==============================================================================
+
+/**
+ * Extract time parts strictly in Asia/Kolkata timezone
+ * @param {Date} [date]
+ * @returns {{ year: number, month: number, day: number, hour: number, minute: number, second: number, dateStr: string, formatted: string }}
+ */
+export function getKolkataTime(date = new Date()) {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
+    const parts = formatter.formatToParts(date);
+    const map = {};
+    for (const p of parts) {
+      map[p.type] = p.value;
+    }
+
+    const hour24 = parseInt(map.hour, 10);
+    const minute = parseInt(map.minute, 10);
+    const second = parseInt(map.second, 10);
+    const hour12 = hour24 % 12 || 12;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    const formatted = `${String(hour12).padStart(2, '0')}:${map.minute} ${ampm}`;
+
+    return {
+      year: parseInt(map.year, 10),
+      month: parseInt(map.month, 10),
+      day: parseInt(map.day, 10),
+      hour: hour24,
+      minute,
+      second,
+      dateStr: `${map.year}-${map.month}-${map.day}`,
+      formatted,
+    };
+  } catch (e) {
+    // Fallback if environment lacks Intl timezone support
+    const d = new Date(date);
+    const hour24 = d.getHours();
+    return {
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
+      day: d.getDate(),
+      hour: hour24,
+      minute: d.getMinutes(),
+      second: d.getSeconds(),
+      dateStr: d.toISOString().slice(0, 10),
+      formatted: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+  }
+}
 
 /**
  * Format numeric amount into strict Indian Rupee format (₹)
@@ -18,7 +76,7 @@ export function formatINR(amount) {
 
 /**
  * Calculate dynamic estimated wait time in minutes
- * Formula: (Active orders ahead in Placed or Preparing) * 5 minutes
+ * Formula: (Active orders ahead in Placed or Preparing + 1) * 5 minutes
  * @param {number} ordersAhead
  * @param {string} currentStatus
  * @returns {number} Wait time in minutes

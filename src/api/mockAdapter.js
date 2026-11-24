@@ -1,12 +1,12 @@
 // ==============================================================================
-// HIGH-FIDELITY LOCAL MOCK ADAPTER
+// HIGH-FIDELITY LOCAL MOCK ADAPTER (ASIA/KOLKATA TIMEZONE STRICT)
 // Backed by localStorage + BroadcastChannel API for multi-window real-time sync
 // Strictly adheres to all business invariants and rule parity
 // ==============================================================================
 
 import { SEED_MENU_ITEMS } from '../data/seedMenu';
 import { VALID_STATUS_TRANSITIONS, CANTEEN_RULES } from '../utils/constants';
-import { formatTokenDisplay } from '../utils/formatters';
+import { formatTokenDisplay, getKolkataTime } from '../utils/formatters';
 
 const STORAGE_KEYS = {
   MENU: 'canteen_mock_menu_v1',
@@ -31,17 +31,14 @@ const menuSubscribers = new Set();
 function dispatchOrderEvent(type, order) {
   const payload = { type, order, timestamp: Date.now() };
   
-  // Local notification
   orderSubscribers.forEach(cb => {
     try { cb(payload); } catch (e) { console.error('Subscriber error', e); }
   });
 
-  // Cross-window notification
   if (broadcastBus) {
     try { broadcastBus.postMessage({ channel: 'orders', ...payload }); } catch (e) {}
   }
   
-  // Storage event fallback for older browsers
   try {
     localStorage.setItem('canteen_realtime_ping', JSON.stringify({ channel: 'orders', ...payload }));
   } catch (e) {}
@@ -100,13 +97,11 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Initialize default storage data
 function getStoredMenu() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.MENU);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
-  // Default to seed menu items
   localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(SEED_MENU_ITEMS));
   return SEED_MENU_ITEMS;
 }
@@ -121,9 +116,6 @@ function getStoredOrders() {
     if (raw) return JSON.parse(raw);
   } catch (e) {}
 
-  // Generate 2 sample orders for initial demonstration:
-  // Order 1: Placed 16 minutes ago (to immediately demonstrate TC-08 overdue alert)
-  // Order 2: Preparing placed 4 minutes ago
   const now = Date.now();
   const sampleOrders = [
     {
@@ -138,7 +130,7 @@ function getStoredOrders() {
         { menu_item_id: 'menu-samosa-01', item_name: 'Crispy Samosa (2 pcs)', quantity: 2, unit_price: 30, subtotal: 60 },
         { menu_item_id: 'menu-chai-11', item_name: 'Masala Chai', quantity: 2, unit_price: 15, subtotal: 30 }
       ],
-      created_at: new Date(now - 16 * 60 * 1000).toISOString(), // 16 minutes ago
+      created_at: new Date(now - 16 * 60 * 1000).toISOString(),
       updated_at: new Date(now - 16 * 60 * 1000).toISOString(),
     },
     {
@@ -166,9 +158,10 @@ function saveStoredOrders(orders) {
   localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
 }
 
-// Concurrency-safe atomic token generator
+// Concurrency-safe atomic token generator with Asia/Kolkata date boundary
 function getNextTokenNumber() {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const kolkata = getKolkataTime(new Date());
+  const todayStr = kolkata.dateStr; // YYYY-MM-DD in Asia/Kolkata
   let seq = { date: todayStr, lastToken: 2 }; // Matches 2 seed orders
 
   try {
@@ -325,8 +318,12 @@ export const MockAdapter = {
 
   async getDailyMetrics() {
     const orders = getStoredOrders();
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const todayOrders = orders.filter(o => o.created_at.startsWith(todayStr));
+    const kolkata = getKolkataTime(new Date());
+    const todayStr = kolkata.dateStr; // Match strictly in Asia/Kolkata date
+    const todayOrders = orders.filter(o => {
+      const orderKolkata = getKolkataTime(new Date(o.created_at));
+      return orderKolkata.dateStr === todayStr;
+    });
 
     const totalOrdersCount = todayOrders.length;
     const grossSales = todayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);

@@ -1,19 +1,21 @@
 // ==============================================================================
-// CANTEEN OPERATIONAL HOURS HOOK
-// Enforces 08:00 - 17:00 hours with strict 16:45 ordering cutoff
+// CANTEEN OPERATIONAL HOURS HOOK (ASIA/KOLKATA TIMEZONE STRICT)
+// Enforces 08:00 - 17:00 IST hours with strict 16:45 IST ordering cutoff
 // ==============================================================================
 
 import { useState, useEffect } from 'react';
 import { CANTEEN_RULES } from '../utils/constants';
 import { useSimulation } from '../context/SimulationContext';
+import { getKolkataTime } from '../utils/formatters';
 
 export function useCanteenHours() {
   const { getEffectiveTime } = useSimulation();
   const [status, setStatus] = useState(() => evaluateHours(getEffectiveTime()));
 
-  function evaluateHours(now) {
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+  function evaluateHours(effectiveDate) {
+    const kolkata = getKolkataTime(effectiveDate);
+    const hours = kolkata.hour;
+    const minutes = kolkata.minute;
     const currentTimeMinutes = hours * 60 + minutes;
 
     const openTimeMinutes = CANTEEN_RULES.OPEN_HOUR * 60 + CANTEEN_RULES.OPEN_MINUTE; // 480 (8:00 AM)
@@ -26,11 +28,11 @@ export function useCanteenHours() {
 
     let notice = '';
     if (currentTimeMinutes < openTimeMinutes) {
-      notice = 'Canteen opens at 8:00 AM. Ordering will open shortly.';
+      notice = 'Canteen opens at 8:00 AM IST. Ordering will open shortly.';
     } else if (isPastCutoff && currentTimeMinutes < closeTimeMinutes) {
-      notice = 'Orders for today are closed (Cutoff 4:45 PM). Canteen closes at 5:00 PM.';
+      notice = 'Orders for today are closed (Cutoff 4:45 PM IST). Canteen closes at 5:00 PM IST.';
     } else if (currentTimeMinutes >= closeTimeMinutes) {
-      notice = 'Canteen is closed for today. Kitchen resumes tomorrow at 8:00 AM.';
+      notice = 'Canteen is closed for today. Kitchen resumes tomorrow at 8:00 AM IST.';
     }
 
     return {
@@ -38,8 +40,9 @@ export function useCanteenHours() {
       isPastCutoff,
       canAcceptOrders,
       notice,
-      currentTime: now,
-      formattedTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      currentTime: effectiveDate,
+      kolkataTime: kolkata,
+      formattedTime: `${kolkata.formatted} IST`,
     };
   }
 
