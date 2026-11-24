@@ -125,7 +125,8 @@ canteen-order-queue/
    $$\text{Placed} \longrightarrow \text{Preparing} \longrightarrow \text{Ready} \longrightarrow \text{Collected}$$
    - Backward transitions (e.g., *Ready* back to *Preparing*) are strictly forbidden at both UI and database API layers.
 2. **Queue Wait-Time Calculation:**
-   $$\text{Estimated Time} = (\text{Orders Ahead in Placed or Preparing}) \times 5\text{ minutes}$$
+   $$\text{Estimated Time} = \max(5, (\text{Orders Ahead in Placed or Preparing} + 1) \times 5)\text{ minutes}$$
+   - When order status is **Ready** or **Collected**, estimated wait time is **0 minutes** (*"Ready for pickup immediately"*).
 3. **Order Limits & Validation:**
    - Maximum **10 units** of any individual item per order.
    - Student Name and College Roll Number are mandatory non-empty strings.
@@ -175,4 +176,4 @@ When user approval is granted, execute in sequential phases:
 7. **Stage 7 — Owner Menu Manager (`/admin`):**
    - Metrics bar, menu CRUD, price adjustments, stock toggles, live synchronization to student menu.
 8. **Stage 8 — End-to-End Verification, Test Suite & Deployment Prep:**
-   - Execute the 12-test QA checklist, verify edge cases, and prepare Vercel deployment documentation.
+   - Execute the 14-test QA checklist (TC-01 through TC-14), verify edge cases, and prepare Vercel deployment documentation.
