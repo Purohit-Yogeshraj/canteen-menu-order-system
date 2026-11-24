@@ -21,6 +21,16 @@ export function FallbackImage({ src, alt, className = '', category = 'Snacks' })
   const gradient = categoryGradients[category] || 'from-orange-100 to-amber-100 text-orange-700';
 
   if (!src || hasError) {
+    if (alt && alt.toLowerCase().includes('gulab jamun')) {
+      return (
+        <img
+          src="/images/food/gulabjamun.jpg"
+          alt={alt}
+          className={`w-full h-full object-cover ${className}`}
+        />
+      );
+    }
+
     return (
       <div
         className={`flex flex-col items-center justify-center bg-gradient-to-br ${gradient} ${className}`}

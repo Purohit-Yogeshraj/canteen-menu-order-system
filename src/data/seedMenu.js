@@ -150,7 +150,7 @@ export const SEED_MENU_ITEMS = [
     price: 35,
     is_veg: true,
     description: 'Warm, melt-in-mouth milk-solid dumplings soaked in rose and cardamom-scented sugar syrup.',
-    image_url: 'https://images.unsplash.com/photo-1589119908995-c6837fa14d48?auto=format&fit=crop&w=600&q=80',
+    image_url: 'https://images.unsplash.com/photo-1666190092159-3171cf0fbb12?auto=format&fit=crop&w=600&q=80',
     is_available: true,
   },
   {

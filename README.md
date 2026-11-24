@@ -2,7 +2,7 @@
 
 **A smart, responsive digital canteen ordering and queue management application.**
 
-> **Live Application:** [ADD YOUR ACTUAL VERCEL URL HERE]
+> **Live Application:** https://canteen-menu-order-system.vercel.app/
 
 ---
 

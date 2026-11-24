@@ -100,7 +100,21 @@ if (typeof window !== 'undefined') {
 function getStoredMenu() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.MENU);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const items = JSON.parse(raw);
+      // Auto-heal legacy broken image URLs in cached browser localStorage
+      let updated = false;
+      items.forEach(item => {
+        if (item.id === 'menu-gulabjamun-15' && (item.image_url?.includes('1589119908995') || !item.image_url)) {
+          item.image_url = 'https://images.unsplash.com/photo-1666190092159-3171cf0fbb12?auto=format&fit=crop&w=600&q=80';
+          updated = true;
+        }
+      });
+      if (updated) {
+        localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(items));
+      }
+      return items;
+    }
   } catch (e) {}
   localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(SEED_MENU_ITEMS));
   return SEED_MENU_ITEMS;

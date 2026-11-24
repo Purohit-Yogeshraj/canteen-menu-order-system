@@ -181,7 +181,7 @@ INSERT INTO menu_items (name, category, price, is_veg, description, image_url, i
 ('South Indian Filter Coffee', 'Beverages', 25.00, true, 'Traditional chicory blend decoction frothed with boiling whole milk, served in a brass davarah tumbler.', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', true),
 ('Iced Cold Coffee', 'Beverages', 40.00, true, 'Creamy chilled espresso blended with chocolate syrup and thick milk, topped with cocoa powder.', 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80', true),
 ('Fresh Nimbu Soda', 'Beverages', 25.00, true, 'Chilled club soda with fresh lime juice, black salt, cumin powder, and fresh mint leaves.', 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80', true),
-('Gulab Jamun (2 pcs)', 'Desserts', 35.00, true, 'Warm, melt-in-mouth milk-solid dumplings soaked in rose and cardamom-scented sugar syrup.', 'https://images.unsplash.com/photo-1589119908995-c6837fa14d48?auto=format&fit=crop&w=600&q=80', true),
+('Gulab Jamun (2 pcs)', 'Desserts', 35.00, true, 'Warm, melt-in-mouth milk-solid dumplings soaked in rose and cardamom-scented sugar syrup.', 'https://images.unsplash.com/photo-1666190092159-3171cf0fbb12?auto=format&fit=crop&w=600&q=80', true),
 ('Chocolate Walnut Brownie', 'Desserts', 50.00, true, 'Fudgy dark chocolate brownie studded with toasted walnuts and drizzled with warm chocolate ganache.', 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80', true);
 
 -- Enable Supabase Realtime Change Data Capture on relevant tables
