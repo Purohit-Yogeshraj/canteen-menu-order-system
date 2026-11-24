@@ -15,7 +15,10 @@ let configurationError = null;
 
 // Production Fail-Fast Validation Rule
 if (isProduction) {
-  if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.trim() === '' || supabaseAnonKey.trim() === '') {
+  if (explicitMockMode) {
+    // Explicit Mock Demo Mode allowed when deliberately set in Vercel env
+    activeMode = 'mock';
+  } else if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.trim() === '' || supabaseAnonKey.trim() === '') {
     configurationError = 
       'FATAL CONFIGURATION ERROR: Supabase credentials (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) are missing in production. ' +
       'Production builds are strictly forbidden from silently falling back to mock data. Please configure environment variables in your Vercel deployment settings.';
