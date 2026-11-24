@@ -8,6 +8,7 @@ import { AlertCircle, Clock, Sparkles } from 'lucide-react';
 import { useMenu } from '../context/MenuContext';
 import { useCart } from '../context/CartContext';
 import { useCanteenHours } from '../hooks/useCanteenHours';
+import { useSimulation } from '../context/SimulationContext';
 import { FoodCard } from '../components/menu/FoodCard';
 import { CategoryFilter } from '../components/menu/CategoryFilter';
 import { StickyCartBar } from '../components/menu/StickyCartBar';
@@ -16,7 +17,8 @@ import { LoadingSpinner, EmptyState } from '../components/common/EmptyState';
 export function StudentMenu() {
   const { filteredItems, loading, error, setSelectedCategory, setSearchQuery, setVegFilter } = useMenu();
   const { evictedNotice, clearEvictedNotice } = useCart();
-  const { isPastCutoff, isOpen, notice } = useCanteenHours();
+  const { isPastCutoff, isOpen, notice, formattedTime } = useCanteenHours();
+  const { simulationActive, simulatedScenario, setScenario } = useSimulation();
 
   const handleResetFilters = () => {
     setSelectedCategory('All');
@@ -47,12 +49,40 @@ export function StudentMenu() {
 
         {/* Operating Hours / Cutoff Alert Banner */}
         {(!isOpen || isPastCutoff) && notice && (
-          <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-300/80 shadow-sm flex items-start space-x-3">
-            <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-slate-900">Notice from Canteen Kitchen</h4>
-              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{notice}</p>
+          <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-300/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-slate-900">Notice from Canteen Kitchen</h4>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{notice}</p>
+              </div>
             </div>
+            <button
+              onClick={() => setScenario('normal')}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all whitespace-nowrap min-h-[40px] active:scale-95 flex-shrink-0"
+              title="Temporarily simulate 12:30 PM peak lunch hours to evaluate ordering features"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Simulate Open Hours (12:30 PM)</span>
+            </button>
+          </div>
+        )}
+
+        {/* Active Simulation Notice Banner */}
+        {simulationActive && (
+          <div className="mb-4 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm animate-in fade-in">
+            <div className="flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>
+                <strong>Evaluation Mode Active:</strong> Simulating {formattedTime} ({simulatedScenario === 'normal' ? 'Open for Orders' : simulatedScenario === 'cutoff' ? 'Past 4:45 PM Cutoff' : 'Closed'}).
+              </span>
+            </div>
+            <button
+              onClick={() => setScenario('real')}
+              className="text-emerald-800 hover:text-emerald-950 font-bold underline text-xs ml-auto whitespace-nowrap"
+            >
+              Reset to Real System Clock
+            </button>
           </div>
         )}
 

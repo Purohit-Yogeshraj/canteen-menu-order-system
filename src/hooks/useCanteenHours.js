@@ -9,7 +9,7 @@ import { useSimulation } from '../context/SimulationContext';
 import { getKolkataTime } from '../utils/formatters';
 
 export function useCanteenHours() {
-  const { getEffectiveTime } = useSimulation();
+  const { getEffectiveTime, virtualOffsetMs, simulationActive, simulatedScenario } = useSimulation();
   const [status, setStatus] = useState(() => evaluateHours(getEffectiveTime()));
 
   function evaluateHours(effectiveDate) {
@@ -47,15 +47,15 @@ export function useCanteenHours() {
   }
 
   useEffect(() => {
+    // Immediately evaluate on mount or whenever virtual offset / simulation mode changes
+    setStatus(evaluateHours(getEffectiveTime()));
+
     const timer = setInterval(() => {
       setStatus(evaluateHours(getEffectiveTime()));
     }, 5000);
 
-    // Initial check
-    setStatus(evaluateHours(getEffectiveTime()));
-
     return () => clearInterval(timer);
-  }, [getEffectiveTime]);
+  }, [getEffectiveTime, virtualOffsetMs, simulationActive, simulatedScenario]);
 
   return status;
 }

@@ -64,7 +64,7 @@ export function DemoControls() {
         {/* Title */}
         <div className="flex items-center space-x-1.5 text-amber-400 font-semibold">
           <ShieldCheck className="w-4 h-4" />
-          <span>Lab Evaluator Demo Controls (Dev Only)</span>
+          <span>Lab Evaluation Demo Controls</span>
         </div>
 
         {/* Time Simulation Scenarios */}

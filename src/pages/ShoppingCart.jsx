@@ -5,9 +5,10 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCanteenHours } from '../hooks/useCanteenHours';
+import { useSimulation } from '../context/SimulationContext';
 import { orderService } from '../api/orderService';
 import { formatINR } from '../utils/formatters';
 import { FallbackImage } from '../components/common/FallbackImage';
@@ -33,6 +34,7 @@ export function ShoppingCart() {
   } = useCart();
 
   const { canAcceptOrders, isPastCutoff } = useCanteenHours();
+  const { setScenario } = useSimulation();
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -135,11 +137,22 @@ export function ShoppingCart() {
 
         {/* Cutoff Warning Banner if past 4:45 PM */}
         {!canAcceptOrders && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-300 text-red-900 text-xs flex items-center space-x-2.5">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <span>
-              Orders for today are closed (Cutoff 4:45 PM). New orders resume tomorrow at 8:00 AM.
-            </span>
+          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center space-x-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              <span>
+                Canteen is closed for today (Hours: 08:00 AM - 05:00 PM IST, Cutoff 4:45 PM).
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setScenario('normal')}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all text-xs whitespace-nowrap min-h-[36px] active:scale-95 flex-shrink-0"
+              title="Simulate 12:30 PM open hours to test order checkout"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Simulate Open Hours (12:30 PM)</span>
+            </button>
           </div>
         )}
 
