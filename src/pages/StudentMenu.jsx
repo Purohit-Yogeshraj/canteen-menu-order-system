@@ -27,7 +27,10 @@ export function StudentMenu() {
   };
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="min-h-screen pb-28 relative">
+      {/* Lovable-Style Ambient Glow Backdrop */}
+      <div className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-96 bg-gradient-to-b from-canteen-500/10 via-amber-500/5 to-transparent blur-3xl -z-10" />
+
       {/* Notice & Alert Banners */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         
@@ -87,21 +90,23 @@ export function StudentMenu() {
         )}
 
         {/* Hero Welcome Headline */}
-        <div className="mb-5">
-          <div className="flex items-center space-x-2 text-canteen-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
+        <div className="mb-5 animate-fade-in-up">
+          <div className="inline-flex items-center space-x-1.5 text-canteen-600 bg-canteen-50 border border-canteen-200/80 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-2 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-canteen-500" />
             <span>Freshly Cooked Daily</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Campus Canteen Menu
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
             Skip the physical counter rush. Order your favorites and pick up when your token is called.
           </p>
         </div>
 
         {/* Filter & Search Bar */}
-        <CategoryFilter />
+        <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <CategoryFilter />
+        </div>
 
         {/* Catalog Grid */}
         {loading ? (
@@ -119,8 +124,14 @@ export function StudentMenu() {
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {filteredItems.map((item) => (
-              <FoodCard key={item.id} item={item} />
+            {filteredItems.map((item, index) => (
+              <div
+                key={item.id}
+                className="stagger-card"
+                style={{ animationDelay: `${Math.min(index * 45, 550)}ms` }}
+              >
+                <FoodCard item={item} />
+              </div>
             ))}
           </div>
         )}

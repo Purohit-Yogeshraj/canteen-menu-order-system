@@ -20,3 +20,38 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Lovable-style Staggered Entry Keyframes */
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stagger-card {
+  animation: cardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/* Lovable-style Shimmer Gradient Background */
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #f97316 0%, #fbbf24 50%, #f97316 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmerWave 4s linear infinite;
+}

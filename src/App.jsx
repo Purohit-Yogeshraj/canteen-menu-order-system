@@ -15,6 +15,7 @@ import { Navbar } from './components/common/Navbar';
 import { DemoControls } from './components/dev/DemoControls';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoginModal } from './components/common/LoginModal';
+import { WelcomeSplash } from './components/common/WelcomeSplash';
 
 // 6 Core Application Screens
 import { StudentMenu } from './pages/StudentMenu';
@@ -38,6 +39,9 @@ export function App() {
             <OrderProvider>
               <BrowserRouter>
                 <div className="min-h-screen flex flex-col bg-surface-light text-slate-900 font-sans antialiased">
+                  {/* Entrance Welcome Splash Animation */}
+                  <WelcomeSplash />
+
                   {/* Global Staff & Admin Login Modal */}
                   <LoginModal />
 
