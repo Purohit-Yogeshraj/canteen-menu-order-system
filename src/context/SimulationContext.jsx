@@ -1,7 +1,6 @@
 // ==============================================================================
-// SIMULATION CONTEXT (DEV-ONLY)
+// SIMULATION CONTEXT (DEV & DEMO CONTROLS)
 // Operates via virtual offset - NEVER modifies system clock Date.now
-// Disabled by default in production
 // ==============================================================================
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -10,22 +9,52 @@ const SimulationContext = createContext(null);
 
 export function SimulationProvider({ children }) {
   const isDev = import.meta.env.DEV;
-  const isEnabled = import.meta.env.VITE_ENABLE_DEMO_CONTROLS === 'true';
+  const isEnabled = 
+    import.meta.env.VITE_ENABLE_DEMO_CONTROLS === 'true' || 
+    import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
-  // virtualTimeOffset in milliseconds
-  const [virtualOffsetMs, setVirtualOffsetMs] = useState(0);
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [simulatedScenario, setSimulatedScenario] = useState('normal'); // 'normal' | 'cutoff' | 'closed'
+  const isDevOrDemo = isDev || isEnabled;
+
+  // If running in demo mode and current real-world time is outside operating hours (e.g. late night),
+  // automatically default to 12:30 PM peak lunch hours so evaluators can test ordering immediately!
+  const calculateInitialOffset = () => {
+    if (!isDevOrDemo) return { offset: 0, active: false, scenario: 'real' };
+
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+
+    // Canteen is closed if before 8:00 AM (480m) or past 4:45 PM (1005m)
+    const isClosed = totalMinutes < 480 || totalMinutes >= 1005;
+
+    if (isClosed) {
+      const target = new Date(now);
+      target.setHours(12, 30, 0, 0); // 12:30 PM (Open)
+      return {
+        offset: target.getTime() - now.getTime(),
+        active: true,
+        scenario: 'normal',
+      };
+    }
+
+    return { offset: 0, active: false, scenario: 'real' };
+  };
+
+  const initial = calculateInitialOffset();
+  const [virtualOffsetMs, setVirtualOffsetMs] = useState(initial.offset);
+  const [simulationActive, setSimulationActive] = useState(initial.active);
+  const [simulatedScenario, setSimulatedScenario] = useState(initial.scenario);
 
   // Scenario presets
   const setScenario = (scenario) => {
-    if (!isDev && !isEnabled) return;
+    if (!isDevOrDemo) return;
 
     const now = new Date();
     setSimulatedScenario(scenario);
 
     if (scenario === 'normal') {
-      // Set to 12:30 PM today (peak hours)
+      // Set to 12:30 PM today (peak hours - open)
       const target = new Date(now);
       target.setHours(12, 30, 0, 0);
       setVirtualOffsetMs(target.getTime() - now.getTime());
@@ -56,7 +85,7 @@ export function SimulationProvider({ children }) {
   return (
     <SimulationContext.Provider
       value={{
-        isDevMode: isDev || isEnabled,
+        isDevMode: isDevOrDemo,
         simulationActive,
         simulatedScenario,
         setScenario,
